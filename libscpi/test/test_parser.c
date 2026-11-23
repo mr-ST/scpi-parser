@@ -323,6 +323,23 @@ static void testCommandsHandling(void) {
     error_buffer_clear();
 }
 
+static void testCompoundAfterUndefinedHeader(void) {
+    output_buffer_clear();
+    error_buffer_clear();
+    SCPI_RegSet(&scpi_context, SCPI_REG_QUESC, 0);
+
+    /* The second header composes to STAT:QUES:STAT:QUES:COND?, which is
+     * undefined; the third one still has the path STAT:QUES: */
+    SCPI_Input(&scpi_context, "STAT:QUES:COND?;STAT:QUES:COND?;COND?\r\n",
+            strlen("STAT:QUES:COND?;STAT:QUES:COND?;COND?\r\n"));
+    CU_ASSERT_STRING_EQUAL("0;0\r\n", output_buffer);
+    CU_ASSERT_EQUAL(err_buffer_pos, 1);
+    CU_ASSERT_EQUAL(err_buffer[0], SCPI_ERROR_UNDEFINED_HEADER);
+
+    output_buffer_clear();
+    error_buffer_clear();
+}
+
 static void testErrorHandling(void) {
     output_buffer_clear();
     error_buffer_clear();
@@ -1765,6 +1782,7 @@ int main() {
             || (NULL == CU_add_test(pSuite, "SCPI_ParamBool", testSCPI_ParamBool))
             || (NULL == CU_add_test(pSuite, "SCPI_ParamChoice", testSCPI_ParamChoice))
             || (NULL == CU_add_test(pSuite, "Commands handling", testCommandsHandling))
+            || (NULL == CU_add_test(pSuite, "Compound command after undefined header", testCompoundAfterUndefinedHeader))
             || (NULL == CU_add_test(pSuite, "Error handling", testErrorHandling))
             || (NULL == CU_add_test(pSuite, "Device dependent error handling", testErrorHandlingDeviceDependent))
             || (NULL == CU_add_test(pSuite, "IEEE 488.2 Mandatory commands", testIEEE4882))

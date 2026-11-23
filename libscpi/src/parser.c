@@ -213,6 +213,7 @@ scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
             SCPI_ErrorPush(context, SCPI_ERROR_INVALID_CHARACTER);
             result = FALSE;
         } else if (state->programHeader.len > 0) {
+            const char * header = state->programHeader.ptr;
 
             composeCompoundCommand(&cmd_prev, &state->programHeader);
 
@@ -228,6 +229,12 @@ scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
                 result &= processCommand(context);
                 cmd_prev = state->programHeader;
             } else {
+                /* The composition copied the path of cmd_prev in front of the
+                 * header, possibly over cmd_prev itself: keep the copy. */
+                if (state->programHeader.ptr != header) {
+                    cmd_prev.ptr = state->programHeader.ptr;
+                    cmd_prev.len = (int) (header - state->programHeader.ptr);
+                }
                 /* place undefined header with error */
                 /* calculate length of errorenous header and trim \r\n */
                 size_t r2 = r;
