@@ -379,6 +379,18 @@ static void testErrorHandling(void) {
     error_buffer_clear();
 }
 
+static void testDeviceSpecificErrorSetsDde(void) {
+    output_buffer_clear();
+    error_buffer_clear();
+
+    SCPI_ErrorPush(&scpi_context, 1);
+    SCPI_Input(&scpi_context, "*ESR?\r\n", strlen("*ESR?\r\n"));
+    CU_ASSERT_STRING_EQUAL("8\r\n", output_buffer); /* Device dependent error */
+
+    output_buffer_clear();
+    error_buffer_clear();
+}
+
 static void testErrorHandlingDeviceDependent(void) {
 #define TEST_CMDERR(output) {\
     SCPI_Input(&scpi_context, "SYST:ERR:NEXT?\r\n", strlen("SYST:ERR:NEXT?\r\n"));\
@@ -1784,6 +1796,7 @@ int main() {
             || (NULL == CU_add_test(pSuite, "Commands handling", testCommandsHandling))
             || (NULL == CU_add_test(pSuite, "Compound command after undefined header", testCompoundAfterUndefinedHeader))
             || (NULL == CU_add_test(pSuite, "Error handling", testErrorHandling))
+            || (NULL == CU_add_test(pSuite, "Device specific error sets DDE", testDeviceSpecificErrorSetsDde))
             || (NULL == CU_add_test(pSuite, "Device dependent error handling", testErrorHandlingDeviceDependent))
             || (NULL == CU_add_test(pSuite, "IEEE 488.2 Mandatory commands", testIEEE4882))
             || (NULL == CU_add_test(pSuite, "Numeric list", testNumericList))

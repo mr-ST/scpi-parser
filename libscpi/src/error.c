@@ -161,7 +161,7 @@ static const struct error_reg errs[ERROR_DEFS_N] = {
     {-100, -199, ESR_CER}, /* Command error (e.g. syntax error) ch 21.8.9    */
     {-200, -299, ESR_EER}, /* Execution Error (e.g. range error) ch 21.8.10  */
     {-300, -399, ESR_DER}, /* Device specific error -300, -399 ch 21.8.11    */
-    { 1, 32767, ESR_DER}, /* Device designer provided specific error 1, 32767 ch 21.8.11    */
+    {32767, 1, ESR_DER}, /* Device designer provided specific error 1, 32767 ch 21.8.11    */
     {-400, -499, ESR_QER}, /* Query error -400, -499 ch 21.8.12              */
     {-500, -599, ESR_PON}, /* Power on event -500, -599 ch 21.8.13           */
     {-600, -699, ESR_URQ}, /* User Request Event -600, -699 ch 21.8.14       */
