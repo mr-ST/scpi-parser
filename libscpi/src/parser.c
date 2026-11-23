@@ -1376,6 +1376,10 @@ int scpiParser_parseProgramData(lex_state_t * state, scpi_token_t * token) {
                 token->len += wsLen + suffixLen;
                 token->type = SCPI_TOKEN_DECIMAL_NUMERIC_PROGRAM_DATA_WITH_SUFFIX;
                 result = token->len;
+            } else {
+                /* The white space is consumed even without a suffix: count it,
+                 * or the program data ends that many characters too early. */
+                realLen += wsLen;
             }
         }
     }

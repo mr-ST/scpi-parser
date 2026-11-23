@@ -68,6 +68,19 @@ static scpi_result_t test_treeB(scpi_t* context) {
     return SCPI_RES_OK;
 }
 
+static scpi_result_t test_sum(scpi_t* context) {
+    double a;
+    double b;
+
+    if (!SCPI_ParamDouble(context, &a, TRUE) || !SCPI_ParamDouble(context, &b, TRUE)) {
+        return SCPI_RES_ERR;
+    }
+
+    SCPI_ResultDouble(context, a + b);
+
+    return SCPI_RES_OK;
+}
+
 static double test_sample_received = NAN;
 
 static scpi_result_t SCPI_Sample(scpi_t * context) {
@@ -116,6 +129,7 @@ static const scpi_command_t scpi_commands[] = {
 
     { .pattern = "TEST:TREEA?", .callback = test_treeA,},
     { .pattern = "TEST:TREEB?", .callback = test_treeB,},
+    { .pattern = "TEST:SUM?", .callback = test_sum,},
 
     { .pattern = "STUB", .callback = SCPI_Stub,},
     { .pattern = "STUB?", .callback = SCPI_StubQ,},
@@ -292,6 +306,19 @@ static void testCommandsHandling(void) {
     TEST_INPUT("TEXT? \"\", \"test\r\n\"\r\n", "\"test\r\n\"\r\n");
     output_buffer_clear();
 
+    /* Test white space between a number and a comma */
+    TEST_INPUT("TEST:SUM? 1,2\r\n", "3\r\n");
+    output_buffer_clear();
+
+    TEST_INPUT("TEST:SUM? 1 ,2\r\n", "3\r\n");
+    output_buffer_clear();
+
+    TEST_INPUT("TEST:SUM? 1 , 2\r\n", "3\r\n");
+    output_buffer_clear();
+
+    TEST_INPUT("TEST:SUM? 1\t, 2 \r\n", "3\r\n");
+    output_buffer_clear();
+
     CU_ASSERT_EQUAL(err_buffer_pos, 0);
     error_buffer_clear();
 }
@@ -319,6 +346,8 @@ static void testErrorHandling(void) {
             "ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJ",
             "", FALSE, SCPI_ERROR_INPUT_BUFFER_OVERRUN);
     TEST_ERROR("*SRE\r\n", "", FALSE, SCPI_ERROR_MISSING_PARAMETER);
+    TEST_ERROR("TEST:SUM? 1 V, 2\r\n", "", FALSE, SCPI_ERROR_SUFFIX_NOT_ALLOWED);
+    TEST_ERROR("TEST:SUM? 1 , 2 , 3\r\n", "3\r\n", FALSE, SCPI_ERROR_PARAMETER_NOT_ALLOWED);
 
 
 
